@@ -1,7 +1,8 @@
 import argparse
 import numpy
 import rospy
- 
+import time
+
 import baxter_interface
 import baxter_external_devices
  
@@ -10,7 +11,7 @@ import serial
 
 
 
-ser = serial.Serial('/dev/ttyACM1', 115200)
+ser = serial.Serial('/dev/ttyACM0', 115200)
 
 
 
@@ -18,16 +19,17 @@ ser = serial.Serial('/dev/ttyACM1', 115200)
 def forearm_control():
     right = baxter_interface.Limb('right')
     rj = right.joint_names()
+    offsetp = calibrate(1)
     while True:
         sensorValues = ser.readline()
         if(is_float(sensorValues)): 
             ypr = sensorValues.split()
             yaw = numpy.radians(float(ypr[0]))
-            pitch = numpy.radians(float(ypr[1]))
+            pitch = numpy.radians(float(ypr[1])) - offsetp
             roll = numpy.radians(float(ypr[2]))
-            print pitch
+            print roll
             #print(str(yaw) + ", " + str(pitch) + ", " + str(roll))
-            right.set_joint_positions({rj[5]:pitch}, {rj[6]:roll})
+            right.set_joint_positions({rj[4]:roll})
             #right.set_joint_positions({rj[6]:roll})
 
 def is_float(s):
@@ -40,6 +42,12 @@ def is_float(s):
         return False
     except IndexError:
         return False
+
+def calibrate(s):
+
+    time.sleep(5)
+    sensorValues = ser.readline()
+    return numpy.radians(float(sensorValues.split()[s]))
 
 
 

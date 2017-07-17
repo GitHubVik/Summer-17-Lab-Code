@@ -11,27 +11,38 @@ import serial
 
 
 
-ser = serial.Serial('/dev/ttyACM0', 115200)
-
+ser = serial.Serial('/dev/ttyACM1', 115200)
+y = 0
+p = 1
+r = 2
 
 
 
 def forearm_control():
     right = baxter_interface.Limb('right')
     rj = right.joint_names()
-    offset = calibrate()
+
+    sensorReadings = ser.readline()
+    if(is_float(sensorReadings)):
+        offsety = calibrate(y)
+        offsetp = calibrate(p)
+        offsetr = calibrate(r)
     right.set_joint_positions({rj[0]: 0.0})
+
     while True:
         sensorValues = ser.readline()
         if(is_float(sensorValues)): 
             ypr = sensorValues.split()
-            yaw = -numpy.radians(float(ypr[0]))
-            pitch = numpy.radians(float(ypr[1])) - offset
-            roll = numpy.radians(float(ypr[2]))
+            yaw = numpy.radians(float(ypr[0])) - offsety
+            pitch = numpy.radians(float(ypr[1])) - offsetp
+            roll = numpy.radians(float(ypr[2])) - offsetr
             print yaw
             #print(str(yaw) + ", " + str(pitch) + ", " + str(roll))
-            set_j(right, rj[3], pitch)
-            #set_j(right, rj[4], roll)
+            set_j(right, yaw, pitch)
+            #right.set_joint_positions({rj[0]:yaw})
+            #right.set_joint_positions({rj[1]:pitch})
+            #right.set_joint_positions({rj[2]:roll})
+
             
 
 def is_float(s):
@@ -46,16 +57,20 @@ def is_float(s):
         return False
 
 
-def calibrate():
+def calibrate(s):
 
-    time.sleep(3)
+    time.sleep(7)
     sensorValues = ser.readline()
-    return numpy.radians(float(sensorValues.split()[1]))
+    return numpy.radians(float(sensorValues.split()[s]))
 
-def set_j(limb, joint_name, value):
+def set_j(joint_name, yaw, pitch):
+    right = baxter_interface.Limb('right')
+    rj = right.joint_names()
         
-        joint_command = {joint_name: value}
-        limb.set_joint_positions(joint_command)
+    joint_command_y = {rj[0]: yaw}
+    joint_commany_p = {rj[1]: pitch}
+    #joint_command_r = {rj[2]: roll}
+    joint_name.set_joint_positions(joint_command_y)
 
 
 
