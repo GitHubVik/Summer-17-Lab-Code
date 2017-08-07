@@ -17,8 +17,10 @@ ser = serial.Serial('/dev/ttyACM0', 115200)
 
 
 def forearm_control():
+
     right = baxter_interface.Limb('right')
     rj = right.joint_names()
+    right.set_joint_position_speed(1.0)
     offsetp = calibrate(1)
     while True:
         sensorValues = ser.readline()
@@ -29,7 +31,8 @@ def forearm_control():
             roll = numpy.radians(float(ypr[2]))
             print roll
             #print(str(yaw) + ", " + str(pitch) + ", " + str(roll))
-            right.set_joint_positions({rj[4]:roll})
+            pos = ({rj[4]:roll, rj[3]:pitch})
+            right.set_joint_positions(pos)
             #right.set_joint_positions({rj[6]:roll})
 
 def is_float(s):
