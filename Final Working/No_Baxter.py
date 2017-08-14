@@ -17,6 +17,7 @@ p2 = 4      # /
 r2 = 5      #/
 
 
+
 #right = baxter_interface.Limb('right')
 #rj = right.joint_names()
 
@@ -28,8 +29,8 @@ r2 = 5      #/
 #pitch = numpy.radians(float(ypr[1])) - offsetp
 #roll = numpy.radians(float(ypr[2])) - offsetr
 
-
-def offsetter(num):                                #Creates offsets in order for calibration and "zeroing" of baxter arm     
+    
+def offsetter(num):                                                             #Creates offsets in order for calibration and "zeroing" of baxter arm     
     sensorValues = recvFromArduino()
     counter = 0
     offsets = []
@@ -37,7 +38,7 @@ def offsetter(num):                                #Creates offsets in order for
         sensorValues = recvFromArduino()
         
     while(is_float(sensorValues)):
-        if counter == 1000:
+        if counter == 500:
             offsets = []
             offsets.append(calibrate(y1))
             offsets.append(calibrate(p1))
@@ -51,9 +52,8 @@ def offsetter(num):                                #Creates offsets in order for
             counter = counter+ 1
             sensorValues = recvFromArduino()
 
-def ypr_calc(offsets):                                                      #      Calculates each of the yaw, pitch, and roll values from the arduino
+def ypr_calc(offsets):                                                          #      Calculates each of the yaw, pitch, and roll values from the arduino
     msg = recvFromArduino()
-    #print msg.split()                                                 #      and organizes them into a readable format to send to Baxter
     if is_float(msg) == True:
         yprsnew = msg.split()
         yprs = [float(i) for i in yprsnew]
@@ -61,7 +61,6 @@ def ypr_calc(offsets):                                                      #   
         yprs2 = [yprs[3]-offsets[3], yprs[4]-offsets[4], yprs[5]-offsets[5]]    #       "                                             "
         yprs3 = list(numpy.array(yprs2)-numpy.array(yprs1))                     #       Subtracts the values from the second IMU from the first, in order to avoid any double movements 
         yprtot = [yprs1, yprs3]
-        #print(yprtot)
         return yprtot
 
         
@@ -140,6 +139,7 @@ def recvFromArduino():
 
 
 #****************************************************************************************************
+
 startMarker = 60
 endMarker = 62
 
